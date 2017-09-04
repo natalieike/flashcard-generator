@@ -3,6 +3,7 @@ function Basic(front, back){
 	if (!(this instanceof Basic)) { 
     return new Basic(front, back);
   }
+  this.type = "Basic";
   this.front = front;
   this.back = back;
 };

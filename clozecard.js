@@ -8,7 +8,7 @@ function ClozeCard(fulltext, cloze){
 		console.log("The Cloze isn't found in the Full Text.  Please try again, or use a Basic card.")
 		return;
 	}
-
+	this.type = "ClozeCard";
   this.fullText = fulltext;
   this.cloze = cloze;
   this.partial = getPartial(fulltext, cloze);

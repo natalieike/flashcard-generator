@@ -1,0 +1,1 @@
+[{"type":"Basic","front":"what is your name","back":"natalie"},{"type":"ClozeCard","fullText":"natalie is awesome","cloze":"natalie","partial":"...is awesome"},{"type":"Basic","front":"what is good","back":"sushi"},{"type":"ClozeCard","fullText":"sushi is for dinner","cloze":"sushi","partial":"...is for dinner"}]

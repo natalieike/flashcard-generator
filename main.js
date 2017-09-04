@@ -87,12 +87,13 @@ var createACloze = function(){
 	});
 };
 
+//Loop thru the deck, decide which type of card each flashcard is, and call the appropriate review function
 var deckReview = function(iteration){
 	if(iteration < cardDeck.length){
-		if(cardDeck[iteration] instanceof Basic){
+		if(cardDeck[iteration].type === "Basic"){
 			reviewBasicCard(cardDeck[iteration], iteration);
 		}
-		else if(cardDeck[iteration] instanceof ClozeCard){
+		else if(cardDeck[iteration].type === "ClozeCard"){
 			reviewClozeCard(cardDeck[iteration], iteration);
 		}
 	}
@@ -101,6 +102,7 @@ var deckReview = function(iteration){
 	}
 };
 
+//Ask the question on the front of the card, decide if correct
 var reviewBasicCard = function(card, iteration){
 	i = iteration;
 	inquirer.prompt([
@@ -121,6 +123,7 @@ var reviewBasicCard = function(card, iteration){
 	});
 };
 
+//Request the user to fill in the blank (display partial), decide if answer is correct
 var reviewClozeCard = function(card, iteration){
 	i = iteration;
 	inquirer.prompt([
@@ -135,10 +138,51 @@ var reviewClozeCard = function(card, iteration){
 		}else{
 			console.log("That is incorrect.");
 		}
-		card.logFullText();
+		console.log(card.fullText);
 		i++;
 		deckReview(i);
 	});	
+};
+
+//Save the current flashcard deck to a file
+var saveDeck = function(){
+	inquirer.prompt([
+    {
+    	type: "input",
+    	message: "Please enter a filename.",
+    	name: "filename"
+    }
+	]).then(function(result){
+		fs.writeFile(result.filename, JSON.stringify(cardDeck), function(err){
+			if(err){
+				console.log(err);
+				return;
+			}
+			console.log("Save complete!");
+			mainMenu();
+		});
+	});
+};
+
+//Load a saved deck from file
+var loadDeck = function(){
+	inquirer.prompt([
+    {
+    	type: "input",
+    	message: "Please enter the filename of the flashcard deck you would like to load.",
+    	name: "filename"
+    }
+	]).then(function(result){
+		fs.readFile(result.filename, "utf8", function(err, data){
+			if(err){
+				console.log(err);
+				return;
+			}
+			cardDeck = JSON.parse(data.split(","));
+			console.log("Load complete!");
+			mainMenu();
+		});
+	});
 };
 
 //Initialize with Main Menu
