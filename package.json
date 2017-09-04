@@ -1,0 +1,23 @@
+{
+  "name": "flashcard-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/natalieike/flashcard-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/natalieike/flashcard-generator/issues"
+  },
+  "homepage": "https://github.com/natalieike/flashcard-generator#readme",
+  "dependencies": {
+    "inquirer": "^3.2.3"
+  }
+}
