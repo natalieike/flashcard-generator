@@ -1,11 +1,12 @@
 //Required node modules
 var Basic = require("./basic.js");
 var ClozeCard = require("./clozecard.js");
+var Deck = require("./deck.js");
 var inquirer = require("inquirer");
 var fs = require("fs");
 
 //Array of flashcards
-var cardDeck = [];
+var cardDeck = new Deck();
 
 //Shows the main menu and accepts user choice
 var mainMenu = function(){
@@ -23,10 +24,10 @@ var mainMenu = function(){
 var processMainMenu = function(result){
 	switch(result.menuChoice){
 		case ("Create a Basic card"):
-			createABasic();
+			createACard("Basic");
 			break;
 		case("Create a Cloze card"):
-			createACloze();
+			createACard("ClozeCard");
 			break;
 		case("Review My Deck"):
 			deckReview(0);
@@ -47,55 +48,46 @@ var processMainMenu = function(result){
 	}
 };
 
-//Creates a Basic flashcard and adds to the cardDeck
-var createABasic = function(){
+//Creates a new flashcard and adds to the cardDeck array
+var createACard = function(type){
+	cardType = type;
+	var question = "";
+	var answer = "";
+	switch(type){
+		case ("Basic"):
+			question = "Please enter the front of the card. (The Question)";
+			answer = "Please enter the back of the card. (The Answer)";
+			break;
+		case ("ClozeCard"):
+			question = "Please enter the full text of the card.";
+			answer = "Please enter the cloze (deleted portion)."
+	}
 	inquirer.prompt([
 	  {
 	  	type: "input",
-	  	message: "Please enter the front of the card. (The Question)",
+	  	message: question,
 	  	name: "front"
 	  },
 	  {
 	  	type: "input",
-	  	message: "Please enter the back of the card. (The Answer)",
+	  	message: answer,
 	  	name: "back"
 	  }
 	]).then(function(result){
-		var flashcard = new Basic(result.front, result.back);
-		cardDeck.push(flashcard);
+		cardDeck.addNewCard(cardType, result.front, result.back);
 		mainMenu();
 	});
 };
 
-//Creates a Cloze flashcard and adds to the cardDeck
-var createACloze = function(){
-	inquirer.prompt([
-    {
-    	type: "input",
-    	message: "Please enter the full text of the card.",
-    	name: "fullText"
-    },
-    {
-    	type: "input",
-    	message: "Please enter the cloze (deleted portion).",
-    	name: "cloze"
-    }
-	]).then(function(result){
-		var flashcard = new ClozeCard(result.fullText, result.cloze);
-		cardDeck.push(flashcard);
-		mainMenu();
-	});
-};
 
 //Loop thru the deck, decide which type of card each flashcard is, and call the appropriate review function
 var deckReview = function(iteration){
-	if(iteration < cardDeck.length){
-		if(cardDeck[iteration].type === "Basic"){
-			reviewBasicCard(cardDeck[iteration], iteration);
-		}
-		else if(cardDeck[iteration].type === "ClozeCard"){
-			reviewClozeCard(cardDeck[iteration], iteration);
-		}
+	if(cardDeck.cardArray.length <= 0){
+		console.log("You need to enter at least 1 flashcard first.");
+		mainMenu();
+	}
+	else if(iteration < cardDeck.cardArray.length){
+		reviewCard(cardDeck.cardArray[iteration], iteration);
 	}
 	else{
 		mainMenu();
@@ -103,45 +95,39 @@ var deckReview = function(iteration){
 };
 
 //Ask the question on the front of the card, decide if correct
-var reviewBasicCard = function(card, iteration){
+var reviewCard = function(card, iteration){
 	i = iteration;
+	type = card.type;
+	var question = "";
+	var answer = "";
+	switch(type){
+		case("Basic"):
+			question = card.front;
+			answer = card.back;
+			callback = "The answer is " + card.back;
+			break;
+		case("ClozeCard"):
+			question = "Fill in the blank: " + card.partial;
+			answer = card.cloze;
+			callback = card.fullText;
+			break;
+	}
 	inquirer.prompt([
     {
     	type: "input",
-    	message: card.front,
+    	message: question,
     	name: "guess"
     }
 	]).then(function(result){
-		if(result.guess === card.back){
+		if(result.guess === answer){
 			console.log("That is correct!");
 		}else{
 			console.log("That is incorrect.");
 		}
-		console.log("The answer is " + card.back);
+		console.log(callback);
 		i++;
 		deckReview(i);
 	});
-};
-
-//Request the user to fill in the blank (display partial), decide if answer is correct
-var reviewClozeCard = function(card, iteration){
-	i = iteration;
-	inquirer.prompt([
-    {
-    	type: "input",
-    	message: "Fill in the blank: " + card.partial,
-    	name: "guess"
-    }
-	]).then(function(result){
-		if(result.guess === card.cloze){
-			console.log("That is correct!");
-		}else{
-			console.log("That is incorrect.");
-		}
-		console.log(card.fullText);
-		i++;
-		deckReview(i);
-	});	
 };
 
 //Save the current flashcard deck to a file
@@ -153,7 +139,7 @@ var saveDeck = function(){
     	name: "filename"
     }
 	]).then(function(result){
-		fs.writeFile(result.filename, JSON.stringify(cardDeck), function(err){
+		fs.writeFile(result.filename, JSON.stringify(cardDeck.cardArray), function(err){
 			if(err){
 				console.log(err);
 				return;
@@ -178,7 +164,7 @@ var loadDeck = function(){
 				console.log(err);
 				return;
 			}
-			cardDeck = JSON.parse(data.split(","));
+			cardDeck.cardArray = JSON.parse(data.split(","));
 			console.log("Load complete!");
 			mainMenu();
 		});
